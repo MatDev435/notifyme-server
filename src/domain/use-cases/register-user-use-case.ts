@@ -1,7 +1,7 @@
-import { User } from '@prisma/client'
+import { HashGenerator } from '../cryptography/hash-generator'
+import { User } from '../entities/user'
 import { UsersRepository } from '../repositories/users-repository'
 import { EmailAlreadyInUseError } from './errors/email-already-in-use-error'
-import { hash } from 'bcryptjs'
 
 interface RegisterUserUseCaseRequest {
   name: string
@@ -14,7 +14,10 @@ interface RegisterUserUseCaseResponse {
 }
 
 export class RegisterUserUseCase {
-  constructor(private usersRepository: UsersRepository) {}
+  constructor(
+    private usersRepository: UsersRepository,
+    private hashGenerator: HashGenerator,
+  ) {}
 
   async execute({
     name,
@@ -27,13 +30,15 @@ export class RegisterUserUseCase {
       throw new EmailAlreadyInUseError()
     }
 
-    const passwordHash = await hash(password, 8)
+    const hashedPassword = await this.hashGenerator.hash(password)
 
-    const user = await this.usersRepository.create({
+    const user = User.create({
       name,
       email,
-      passwordHash,
+      password: hashedPassword,
     })
+
+    await this.usersRepository.create(user)
 
     return { user }
   }

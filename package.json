@@ -5,14 +5,15 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/server.ts",
-    "test": "vitest run --dir src/use-cases",
-    "test:watch": "vitest src/use-cases"
+    "dev": "tsx watch src/infra/server.ts",
+    "test": "vitest run --dir src/domain/use-cases",
+    "test:watch": "vitest src/domain/use-cases"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@faker-js/faker": "^8.4.1",
     "@rocketseat/eslint-config": "^2.2.2",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^22.2.0",

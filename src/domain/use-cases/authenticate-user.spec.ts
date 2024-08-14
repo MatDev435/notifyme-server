@@ -1,24 +1,30 @@
 import { InMemoryUsersRepository } from 'test/repositories/in-memory-users-repository'
-import { hash } from 'bcryptjs'
 import { AuthenticateUserUseCase } from './authenticate-user'
 import { InvalidCredentialsError } from './errors/invalid-credentials-error'
+import { FakeHasher } from 'test/cryptography/fake-hasher'
+import { makeUser } from 'test/factories/make-user'
 
 let inMemoryUsersRepository: InMemoryUsersRepository
+let fakeHasher: FakeHasher
 let sut: AuthenticateUserUseCase
 
 describe('Authenticate User Use Case', () => {
   beforeEach(() => {
     inMemoryUsersRepository = new InMemoryUsersRepository()
-    sut = new AuthenticateUserUseCase(inMemoryUsersRepository)
+    fakeHasher = new FakeHasher()
+    sut = new AuthenticateUserUseCase(inMemoryUsersRepository, fakeHasher)
   })
 
   it('should be able to authenticate', async () => {
-    inMemoryUsersRepository.items.push({
-      id: 'user-01',
-      name: 'John Doe',
-      email: 'johndoe@example.com',
-      passwordHash: await hash('123456', 8),
-    })
+    const newUser = makeUser(
+      {
+        email: 'johndoe@example.com',
+        password: await fakeHasher.hash('123456'),
+      },
+      'user-01',
+    )
+
+    await inMemoryUsersRepository.items.push(newUser)
 
     const { user } = await sut.execute({
       email: 'johndoe@example.com',
@@ -29,12 +35,15 @@ describe('Authenticate User Use Case', () => {
   })
 
   it('should not be able to authenticate an user with wrong email', async () => {
-    inMemoryUsersRepository.items.push({
-      id: 'user-01',
-      name: 'John Doe',
-      email: 'johndoe@example.com',
-      passwordHash: await hash('123456', 8),
-    })
+    const newUser = makeUser(
+      {
+        email: 'johndoe@example.com',
+        password: await fakeHasher.hash('123456'),
+      },
+      'user-01',
+    )
+
+    await inMemoryUsersRepository.items.push(newUser)
 
     await expect(() =>
       sut.execute({
@@ -45,12 +54,15 @@ describe('Authenticate User Use Case', () => {
   })
 
   it('should not be able to authenticate an user with wrong password', async () => {
-    inMemoryUsersRepository.items.push({
-      id: 'user-01',
-      name: 'John Doe',
-      email: 'johndoe@example.com',
-      passwordHash: await hash('123456', 8),
-    })
+    const newUser = makeUser(
+      {
+        email: 'johndoe@example.com',
+        password: await fakeHasher.hash('123456'),
+      },
+      'user-01',
+    )
+
+    await inMemoryUsersRepository.items.push(newUser)
 
     await expect(() =>
       sut.execute({

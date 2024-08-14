@@ -1,5 +1,5 @@
-import { Prisma, User } from '@prisma/client'
-import { UsersRepository } from 'src/repositories/users-repository'
+import { User } from 'src/domain/entities/user'
+import { UsersRepository } from 'src/domain/repositories/users-repository'
 
 export class InMemoryUsersRepository implements UsersRepository {
   public items: User[] = []
@@ -14,15 +14,7 @@ export class InMemoryUsersRepository implements UsersRepository {
     return user
   }
 
-  async create(user: Prisma.UserCreateInput): Promise<User> {
-    const newUser = {
-      name: user.name,
-      email: user.email,
-      passwordHash: user.passwordHash,
-    } as User
-
-    this.items.push(newUser)
-
-    return newUser
+  async create(user: User): Promise<void> {
+    this.items.push(user)
   }
 }
